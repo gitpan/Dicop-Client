@@ -1,0 +1,85 @@
+#############################################################################
+#
+# Definition file for requests (aka messages between client # and server).
+# This file only contains the requsts the client needs to know about.
+#
+# This file is only read upon startup of the client - any changes here will
+# not be in effect until you shutdown and restart the client process!
+#
+# See "perldoc Dicop::Request::Pattern" for documentation and examples.
+#
+#############################################################################
+
+# request something
+     
+{
+  match = "cmd_request;type_file"
+  type = "request"
+  req = "name"
+  output = "text"
+  class = "work"
+  auth = 0
+}
+
+{
+  match = "cmd_request;type_test"
+  type = "request"
+  req = "name"
+  req = ""
+  output = "text"
+  class = "work"
+  auth = 0
+}
+
+{
+  match = "cmd_request;type_work"
+  type = "request"
+  req = "name"
+  req = "size"
+  opt = "count"
+  output = "text"
+  class = "work"
+  auth = 0
+}
+
+#############################################################################
+# report back results
+
+# XXX TODO: chunk should be unec.
+
+{
+  match = "cmd_report"
+  req = "job,status,took,token,crc,chunk"
+  opt = "result,reason"
+  type = "other"
+  output = "text"
+  class = "work"
+  auth = 0
+}
+
+#############################################################################
+# auth requests, example:
+#   arch_win32;cmd_auth;fan_5360;id_5;temp_43.2;version_0.24
+
+{
+  match = "cmd_auth"
+  req = "arch,id,version"
+  opt = "chatter,chached,fan,temp,os,cpuinfo,user,pass,id,pid"
+  type = "auth"
+}
+
+#############################################################################
+# All requests that don't match any of the patterns above are automatically
+# invalid and rejected.
+
+# AUTHOR
+#
+# (c) Bundesamt fuer Sicherheit in der Informationstechnik 1998-2004
+#
+# DiCoP is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# See L<http://www.bsi.de/> for more information.
+#
+

@@ -1,0 +1,90 @@
+##############################################################################
+# Dicop client configuration
+
+# See perldoc doc/Config.pod for further information
+
+##############################################################################
+# client id, if set to 0, taken from commandline
+id = 0
+
+##############################################################################
+# Security config
+
+# Change the root dir via chroot() to this directory. Does currently not
+# work properly, so not yet recommended.
+chroot = ""
+
+# After start, change to this user/group. Make sure they exist! This avoids
+# running the client as root, however you must initially start the client
+# while being root, so that the chroot setting above works.
+user = dicop
+group = dicop
+
+##############################################################################
+# Which server(s) URL to use, multiply lines are ok
+
+# When using dicopd as server, the path will be ignored, so that
+# http://127.0.0.1:8888/ and http://127.0.0.1:8888/foo/bar are equivalent
+
+# Adjust here host and port:
+#server = "http://127.0.0.1:8888/cgi-bin/dicop/server"
+# this would work, too:
+server = "dicop-server:8888"
+
+# use this connector method to talk to the server (wget or LWP)
+via = LWP
+
+# If set to 0, servers will tried in turn. If set to 1, servers are tried
+# randomly.
+random_server	= 1
+
+##############################################################################
+# Directories must NOT have "/" at end !
+
+# These must be writable directories. The setup is so that the client can
+# be mounted on a read-only (network) path or drive, and yet the client is
+# able to write certain things:
+
+log_dir		= ./logs
+# it's currently not possible to change the target dir due to hardcoded checks
+target_dir	= target
+worker_dir	= worker
+
+# These can be read-only
+msg_dir		= msg
+data_dir	= data
+
+# Name of log files (inside log_dir), ##id## is replaced by the client id
+error_log	= client_##id##.log
+
+# in seconds
+wait_on_error	= 240
+wait_on_idle	= 300
+
+# How many seconds to sleep before contacting the server for the first time
+initial_sleep	= 0
+
+# prefered chunk size in minutes (1..360, but 5..60 are prefered)
+chunk_size	= 15
+
+# how many chunks to work on at a time (default 1)
+chunk_count	= 1
+
+# how many retries before giving up entirely (default 16)
+retries		= 16
+
+# timeout, maximum working time per chunk in minutes (5 hours is slightly
+# less than the 6 hours maximum hold-time on the server, so that the client
+# always returns parts of his result before the server re-releases the chunk)
+chunk_maxsize	= 300
+
+# Set to 1 to allow download and update of workers and target files
+update_files	= 1
+
+##############################################################################
+# an optional sub-architecture postfix, f.i. 'i386', 'i386-amd' etc. This will
+# be added to the client base arch name (which is automatically determined).
+
+sub_arch	= ""
+
+# EOF

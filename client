@@ -1,0 +1,55 @@
+#!/usr/bin/env perl -w
+
+BEGIN 
+  {
+  unshift @INC, 'lib';
+  $| = 1;			# output buffer off
+  }
+
+use strict;
+use Dicop::Event qw/crumble msg load_messages/;
+use Dicop::Client;
+use Getopt::Long;
+
+require "basics";
+
+print "DiCoP Client v$Dicop::Client::VERSION (build $Dicop::BUILD)";
+print "  (c) Copyright BSI 1998-2006 - see LICENSE file.\n\n";
+
+my $cfg = 'config/client.cfg'; my $id = 0; my $lang = 'en'; my $dbg = 0;
+my $chunks = 0; my $server = ''; my $test = 1; my $via = 'LWP'; my $arch = '';
+my $count = 0; my $retries = 0; my $sub_arch = '';
+die 'Error parsing commandline' unless GetOptions( 
+ 'id=i'=>\$id, 'config=s'=> \$cfg, 'language=s'=>\$lang, 'debug=i'=>\$dbg,
+ 'server=s' => \$server, 'test!' => \$test, 'chunks=i' => \$chunks,
+ 'via=s' => \$via, 'arch=s' => \$arch, 'chunk_count=i' => \$count, 
+ 'retries=i' => \$retries, 'sub_arch=s' => \$sub_arch);
+
+my $client = Dicop::Client->new ( 
+  config => $cfg, id => $id, debug => $dbg, language => $lang, test => $test, 
+  server => $server, chunks => $chunks, via => $via, arch => $arch,
+  sub_arch => $sub_arch, chunk_count => $count );
+crumble('Initialization of client object failed.', 'logs/client.log') and die
+ unless defined $client;
+
+my $c = $client->{cfg};
+
+print "\nlanguage=$lang, config=$cfg, id=$client->{id}, debug=$dbg, ";
+print "test=$client->{test}, chunks=$client->{chunks}\n";
+print "server=$client->{server}\n" if $client->{server};
+print "arch=".$client->full_arch().", ";
+print "chunk_count=$c->{chunk_count}, retries=$c->{retries}\n";
+print "user=", $client->{user} || 'not set', 
+      ", group=", $client->{group} || 'not set',
+      ", chroot=",$client->{chroot} || 'not set',"\n\n";
+
+# chroot does not yet work properly, so don't check for it
+check_user_and_group($c,1);
+#$client->change_root();
+
+$client->change_user_and_group();
+
+$client->work();	# do work ;)
+
+1; # EOF, all done
+

@@ -1,0 +1,419 @@
+=pod
+
+=head1 NAME
+
+CLIENT - This covers the DiCoP client from the end-user's point of view.
+
+Last update: 2004-12-22
+
+=head1 OPTIONS
+
+When starting the client, you can use the following command line options:
+
+	id		optional client id. If unspecified, read from the
+			config file.
+	config		name of the config file to use. Defaults to
+			"config/client.cfg"
+	language	Default is 'en'
+	debug		Output debug information. The higher the level, the
+			more information is printed
+	test		default: Request and work upon testcases
+			Use --notest to disable, this is usefull in
+			combination with --chunks=1
+	chunks		Work only on so much chunks, then exit. 0 is default
+			and disables it. Testcases do count!
+	chunk_count	Cache so many chunks and work on them in a row,
+			Default is 1
+	retries		Upon failure to connect to server, retry so many times
+			before giving up and exiting. Defaults to 16
+	server		Instead of reading the server lines from a config
+			file, use this server
+	arch		Architecture (linux, armv4l, os2, mswin32 etc)
+			Usually not neccessary, since autodetected
+	sub_arch	Sub-architecture string, will be appended to arch.
+			Examples: 'i386', 'i386-amd'. Can be any lowercase
+			string containing letters, numbers. minus and
+			underscore. '-' is used to seperate further sub archs.
+	via		The connector method, default is "LWP". Also possible
+			is "wget". Additionally parameters are added with a
+			',', see examples below
+	user		the user name the process should use after starting
+			(f.i. dicop, nobody etc)
+	group		the group name the process should use after starting
+			(f.i. dicop, nogroup etc)
+	chroot		the directory were to chroot() after starting. Does
+			currently not work and is thus disabled (set to "").
+
+To use the chroot() setting, you must start the client as root. It is
+recommended that you always use the C<user> and C<group> settings together
+with the C<chroot> setting. Under Win32, these settings might not work.
+
+Here are some examples:
+
+	perl client --id=31337 --language=en --config=config/myconf.cfg
+	perl client --server=http://127.0.01/cgi-bin/dicop/server
+	perl client --server=127.0.01:8888
+	perl client --notest --chunks=1 --debug=3
+	perl client --notest --arch=armv4l --id=1234
+	perl client --arch=armv4l --id=1 --via=wget
+	perl client --arch=armv4l --id=1 --via=wget,proxy=OFF
+	perl client --retries=32 --chunk_count=24 --id=123
+	perl client --arch=linux --sub_arch=i386 --id=1
+
+You may abbreviate the options as long as they are distingushable from each
+other:
+
+	./client --id=123 --lang=de --deb=2
+	./client --d=1
+
+You can stop the client at any time, by just aborting it, or killing the
+process. Pressing CTRL-C also works just fine.
+
+If you are just a mere user of the client, there is no need to read further.
+
+
+=head1 CLIENT INSTALL
+
+This covers the installation of the client, which should be done by the
+administrator or someone with experience in these matters.
+
+=head2 Full install
+
+You can either download the complete client package, untar/unzip it or
+mount it via L<net|MOUNTING OVER NFS OR SMB> from the server (for diskless
+workstations etc).
+
+In the first case, you should specify the client ID in the config file to
+avoid having to retype it.
+
+To start the client, change to the client dirrectory and run C<perl client>.
+
+=head2 Automated download
+
+This is the recommended setup for a client.
+
+The following perl script will connect to a HTTP server, download the
+client, unpack it, and then run it. The client should be available at the
+given address and the included configuration file should allow automated
+download of workers and target files. Thus you can setup a diskless machine
+(or booting one from a CD-ROM) to download the latest client version and run
+it. The missing worker files will be pulled down automatically.
+
+This script assumes that the client's ID is the same as the last octet of his
+IP address. When used in conjunction with a DHCP server, all you need is to
+add the clients to the DiCoP (w/ proper ID and IP) and DHCP (w/ proper MAC
+and IP) server, and then turn them on.
+
+Adjust the IPs in the script, or use hostnames in conjunction with a
+nameserver:
+
+	#!/usr/bin/perl -w
+
+	use strict;				# strict perl code
+
+	# create dir and chdir there
+	mkdir '/tmp/client', 0700;              # old Perl needs mask
+	chdir '/tmp/client';
+
+	# get my own ip via ifconfig
+	# you also could use uname -n or something similiar
+	my $rc = `ifconfig`;
+	$rc =~ /inet addr:\s*(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+
+	# Calculate the client ID from the client IP. This trick
+	# allows us to bind each machine name with a specific ID
+	# without having it to pass to that machine. It is assumed
+	# that a DHCP server always hands the same machine the same
+	# IP to simplify things.
+
+	my $ip = "$1.$2.$3.$4";
+	my $net = sprintf("%03i",$3);
+	my $id = $net . sprintf("%03i",$4);
+	print "ip $ip net $net id $id\n"; sleep(2);
+
+	# endless loop:
+	while (3 < 5)
+	  {
+	  # remove old version first (if it exists)
+	  unlink 'latest-client.tar.gz';
+
+	  # get newest client with wget via HTTP
+	  # change the IP to your fileservers address
+	  `wget -U DiCoP -c http://dicop-server/latest-client.tar.gz`;
+
+	  # unpack it
+	  `tar -xzf client.tar.gz`;
+
+	  # the following command will only terminate if something
+	  # went wrong, like the server told the client to terminate
+	  # or the client became outdated:
+	  system "perl client --id=$id --server=dicop-server:8888";
+
+	  print ("Something went wrong, trying again in 300 seconds.\n");
+	  print ("Press CTRL-C to abort.\n";
+
+	  # wait a bit, otherwise we could overload the server(s)
+	  sleep(300);
+	  }
+
+The system you run this on needs wget, and all the modules the client needs.
+
+However, you can also include any modules (except Digest::MD5 and libwww) in
+the latest-client.tar.gz file (under lib/), so that the machine always uses the
+latest (or working) version, regardless of what it has locally installed. See
+below:
+
+=head2 Client prerequisites
+
+Here is an example: Under ./lib of the client bundle, we put in Math::BigInt,
+so that the client will carry it's own version. This means the client will always
+use the version supplied in the bundle, not the one locally install on the node.
+Thus updating Math::BigInt on all nodes is not necc., you can just include a newer
+version into the client bundle and the next time the client get's updated, it will
+pick up the new version.
+
+Before:
+
+	lib/Dicop.pm
+	lib/Dicop/Client.pm
+	...
+
+And after:
+
+	lib/Dicop.pm
+	lib/Dicop/Client.pm
+	lib/Math/BigInt.pm
+	lib/Math/BigFloat.pm
+	lib/Math/BigInt/Calc.pm
+	...
+
+You generally only need to copy the files from the ./lib dir from any distribution
+you want to include into the client dir. This does, however, only work for modules
+that are not required to be compiled (e.g. using XS/C code like Digest::MD5) or
+autosplit. Most pure perl modules are ok, this includes Math::BigInt, Math::String
+and Linux::Cpuinfo.
+
+If Linux::Cpuinfo is not available, the client will work without it.
+
+The client needs quite a few parts of C<Dicop::Base>. However, we seperated the
+things so that you can simple drop a few of the C<Dicop::Base> .pm files into
+the client dir, and have it work without making it necc. to install
+C<Mail::Sendmail>, C<Net::Server> etc at the node.
+
+Here is a short list of files the client needs at least:
+
+        lib/basics
+        lib/Dicop.pm
+        lib/Dicop/Base.pm
+        lib/Dicop/Cache.pm
+        lib/Dicop/Client.pm
+        lib/Dicop/Config.pm
+        lib/Dicop/Connect.pm
+        lib/Dicop/Event.pm
+        lib/Dicop/Hash.pm
+        lib/Dicop/Item.pm
+        lib/Dicop/Request.pm
+
+        lib/Dicop/Client/LWP.pm
+        lib/Dicop/Client/wget.pm
+
+        lib/Dicop/Request/Pattern.pm
+
+This one is optional:
+
+        lib/Linux/Cpuinfo.pm
+
+The other solution is to install Dicop::Base and all it's prerequisites
+at every node.
+
+To make it easier to deploy clients we publish a C<Dicop-Client-3.00.tar.gz>
+package at our website, which contains everything the client needs, except
+C<libwww> and C<Linux::Cpuinfo>, which can be found on L<http://search.cpan.org>.
+
+=head2 Mounting over NFS or Samba
+
+You can mount the client dir via NFS/SMB (Samba). To achieve this, create
+the following structure locally (better inside a sub dir to avoid cluttering
+up root):
+
+	/client
+	/logs
+	/worker
+	/target
+	/cache
+
+C<target>, C<worker>, C<cache> and C<logs> should be writable. You can specify
+these directories inside the B<client.cfg> file and they default to
+I<"../name">. Thus C<client/../worker> refers to the worker dir above and
+all turns out as expected for the client.
+
+All clients will log to different log files, so you need only one central log
+directory. However, C<target> and C<worker> should be an extra directory for
+each client, to avoid that multiple clients write over each others files.
+
+If you want to gather all the client's error logs, you could mount C<logs> as
+one dir on a separate machine or at the server machine. 
+
+Mount C<client> as read-only directly to the servers directory (aka 'client',
+'server' etc should exist in this directory). If you do not want to give
+the workstations access to all the server's data, you can do two things:
+
+=over 2
+
+=item links
+
+You can move the files/data the client needs to another directory, and let
+the client mount this dir. The server may need links to this so that it can
+also access the same data/files (for updating it etc).
+
+Advantage is that a new server version also updates the client.
+
+=item copying 
+
+Just copy over any files the client needs to a separate dir and let the
+client mount it.
+
+The disadvantage is that you need to manually update the client by copying over
+a new server version. This happens only for changes to the client/server source
+code, though, not the actual workers - these are downloaded by the client
+automatically.
+
+
+=back
+
+In both cases the client needs the following directory structure:
+
+	client		- the client itself
+	/lib		- libraries and code
+	/msg		- messages
+	/config		- only /config/client.cfg
+	/cache		- for --via=wget to store temp. files
+	/worker		- to store worker files
+	/target		- to store targets, dictionaries etc
+
+
+=head1 DATA TRANSMITTED TO/FROM SERVER
+
+=head2 SENDING
+
+The client will transmit the following information to the server:
+
+=over 2
+
+=item *
+
+Architecture and sub architecture
+
+=item *
+
+Operating system name and version
+
+=item *
+
+Client version
+
+=item *
+
+Fan speed and CPU temparature
+
+=item *
+
+It's process ID.
+
+=item *
+
+It's unique ID and, optionally, a secret token for authentication.
+
+=item *
+
+The results of the work the client did and how long it took.
+
+=back
+
+The information goes unencrypted over the network. For additionally security
+the server is able to check the IP address of the client. This can not work
+for dynamic IP's, of course. A challenge-response handshake is planned,
+but not yet realized.
+
+If you want to secure the communication between server and client, use an
+encrypted tunnel like C<stunnel> or C<IP-Sec>.
+
+
+=head1 DOWNLOADING
+
+From time to time the client may download a new worker or target file. A
+worker is the program which get's called by the client to work on a certain
+job. The target files are target information for a job and used when the
+normal target information is too big to be passed over the command line.
+
+These downloads will happen automatically, but only when there is need for
+a new worker or target file. You can disable the downloads in the config file
+by setting C<update_file> to 0. However, this might prevent the client from
+working properly.
+
+
+=head1 SMP MACHINES, HYPERTHREADING
+
+The client and worker only takes advantages of one physical CPU. If you have
+a machine with two (or more) physical or virtual (hyperthreading) CPU cores,
+you can simple start two or more clients on the same machine.
+
+These will each start a worker on their own, and each of these workers will
+be using one CPU core. Of course, you need a good OS that keeps each process
+on one CPU instead of switching them around.
+
+Starting two clients on a machine with only one CPU will probably de-
+instead of increasing performance.
+ 
+
+=head1 TROUBLESHOOTING
+
+When you get error messages, don't panic!
+
+First, you can try C<--debug=nr> and replace C<nr> by 1,2 or 3 to get more
+information on what is going on. Here are a couple of messages and their
+meanings:
+
+=over 2
+
+=item "301 Wait, currently no work for you"
+
+The server currently has not work for your client. The client will retry again
+later automatically. Any message starting with 30x will denote that your
+client has to make a break.
+
+Sometimes this happens because the client talked too often and too fast to
+the server, and sometimes there is just no running job at the server.
+
+=item "400 Unknown or invalid client 'id'"
+
+The id your client is using is unknown to the server. Either specifiy the
+correct id with C<--id=number> (replace number with the actual id), or if you
+don't have an ID yet, talk to the server administrator to get an ID.
+
+If you are the administrator, create a new client by connecting to the
+server's web interface and use "Add client" from the menu.
+
+=item "601 Illegal client id 0. Please specify with --id=id_number"
+
+Please see L<"400 Unknown or invalid client 'id'">.
+
+=item "604 Could not run worker 'name'"
+
+The client did not find the worker, did not have permission or something else
+went wrong. Try to start the client with C<--debug=3> for additional details.
+
+=back
+
+=head1 AUTHOR
+
+(c) Bundesamt fuer Sicherheit in der Informationstechnik 1998-2004
+
+DiCoP is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License version 2 as published by the Free
+Software Foundation.
+
+See the file LICENSE or L<http://www.bsi.bund.de/> for more information.
+
+=cut
+

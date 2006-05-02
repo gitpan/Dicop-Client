@@ -1,0 +1,54 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.53.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 ba74339534569e38ec71285aa16ae3113634facd LICENSE
+SHA1 cd512e4a91044c76510ef55181448111a2d95dbe MANIFEST
+SHA1 8abd572aa56901b25e19399dfcf002c046d1b791 README.client
+SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 cache/dummy.txt
+SHA1 be36a878fdf01665969522322a618174232b6fa0 client
+SHA1 79b7b0502333cee06026d66b7c6aa39d5e6e1082 config/client.cfg.sample
+SHA1 d688cf6a5649fa3df4936e4a5dee8e35095d6aab def/client_request.def
+SHA1 35e4359f8ec7659158e149eb7d71c11d61274d33 dicop.asc
+SHA1 32fca09ffc4260ea9f6a82f65f33fb8fd96543d8 doc/Client.pod
+SHA1 fd55e31e0c7dec41f691e8bf1c1d33eb8aed074b doc/Config.pod
+SHA1 4a1ef55ccd2a749b6e9ad737453cad8bd6d8f44d doc/Glossary.pod
+SHA1 2abc92e9b5edcda320a4a8b402beac961699f589 lib/Dicop.pm
+SHA1 3bf60aaf7389dffa0afb3194f5c448ae994a7cd9 lib/Dicop/Base.pm
+SHA1 b0424925a0b26d153049da2aab288d6678adb42c lib/Dicop/Cache.pm
+SHA1 61bff4c0ff02eecd4bec8d046b613121080c5098 lib/Dicop/Client.pm
+SHA1 4f045b181b92c62fcfe93615a55545e322ec9f47 lib/Dicop/Client/LWP.pm
+SHA1 9ae31812b9519686087f9cb3005840c823297c86 lib/Dicop/Client/wget.pm
+SHA1 7ed410e738a4c5d9524ca431bcda6941d250969b lib/Dicop/Config.pm
+SHA1 8a02ac7dc2ec211a79fbd20a2c787fa3779ab572 lib/Dicop/Connect.pm
+SHA1 f6ee5e2647e3fc1e66b795ebf37a000e89dd7cfd lib/Dicop/Event.pm
+SHA1 16fe80ee947883079ee9eafbd89c160099c5a360 lib/Dicop/Hash.pm
+SHA1 02dbdd995ee28c981666467821b251ffbe161e18 lib/Dicop/Item.pm
+SHA1 6cbf9e10f71299c2abf5c532a4448db32736a880 lib/Dicop/Request.pm
+SHA1 1dc0e4aa411960365b076cd2d267b809bb7c58d6 lib/Dicop/Request/Pattern.pm
+SHA1 8549c755217767784d24bb14f78a5f926cd1bc6b lib/basics
+SHA1 3f4029e6858659c5ee4078059cce5a4929d087f0 logs/dummy.txt
+SHA1 d633633b822d898821ac7f5c1d1c744dbd0fe809 msg/de/messages.txt
+SHA1 d633633b822d898821ac7f5c1d1c744dbd0fe809 msg/en/messages.txt
+SHA1 d633633b822d898821ac7f5c1d1c744dbd0fe809 msg/messages.txt
+SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 target/dummy.txt
+SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 worker/dummy.txt
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFEV2HjYmqMGoA0pxgRAvlcAJ0fHoESWJhMp3dV/hz1/RXM89v6kwCgiDUD
+pbJGLlFlHfd7BoAckYsPqhk=
+=HJMN
+-----END PGP SIGNATURE-----

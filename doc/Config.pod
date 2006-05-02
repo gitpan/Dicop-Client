@@ -1,0 +1,576 @@
+=pod
+
+=head1 NAME
+
+CONFIG - DiCoP Config file format and documentation
+
+This documentations covers the details of the configuration files for
+C<dicopd>, C<server> and C<proxy> as well as the client.
+
+Last update: 2004-12-20
+
+=head1 OVERVIEW
+
+=head2 Reading
+
+The configuration files are only read at startup time. Changes to the files
+do not have an effect until you restart the client/server process. This will
+be fixed in the future.
+
+The exception is C<server>, since it is restarted for each connect, it will
+read the config file each time anew.
+
+It is possible to view the config file for the server, but not yet to
+edit the values. To edit the files, edit them with a text editor of your
+choice.
+
+=head2 Format
+
+The file format is simple. The text file is read line by line, any empty
+line (or lines containing only spaces) are skipped.
+
+The C<#> sign denotes a comment, any line that starts with zero or more spaces
+followed by such a character is skipped.
+
+Any other line is interpreted as an entry. Entries consist of a key name and 
+a value, seperated by C<=>.
+
+The key name is case insensitive.
+
+Values are case-sensitive and values containing other characters than
+0..9, a..z, A-Z or "_", "-" or "." must be quoted by using C<"> around the
+value.
+
+If a key appears more than one time, it will hold a list consisting of all
+values.
+
+Sample file:
+
+	# This is a comment
+
+	# Empty lines are ignored, too
+
+		# even this is ignored
+
+	# a sample key
+	key = value
+
+	# this works, too
+	# key is now ["value","other_value"]
+	Key = other_value
+
+	# another more complicated entry
+	name = "foo bar Baz"
+
+Certain keys have a boolean value. Below they are marked with C<B>. In these
+case 1 means on, and 0 means off. You can also give as value 'on', 'yes',
+'no' or 'off'. These will be interpreted case-insensitive.
+
+=head1 SPECIFIC FILES
+
+=head2 server.cfg
+
+This lists all the valid key names in the I<server> config file (server.cfg by
+default) and their possible values.
+
+=over 2
+
+=item allow_admin
+
+Contains a list of IPs or nets that are allowed to administrate
+the server. Any IP not listed here is denied the right to submit changes.
+Please note that you do not need to list the admins in L<allow_status> nor
+L<allow_stats>, they automatically get these rights.
+
+The word C<any> is equivalent to C<0.0.0.0/0> and C<none> to C<0.0.0.0/32>.
+
+Note that L<deny_admin> is checked first, if an IP is denied, L>allow_admin>
+will not be checked. In addition, the default is deny, e.g. if not explicitely
+listed, the right to do something is denied. To deny specific IPs (like
+spoofed or 'impossible' ones) use the L<deny_admin> or similiar settings.
+
+You should deploy a packetfilter or firewall in addition to these settings.
+
+Some examples on how to specify the IPs:
+
+ 0.0.0.0/32		all IPs (usually only for allow_work and allow_stats,
+			otherwise a bad idea
+ any			same as 0.0.0.0/0
+ 1.2.3.4/32		IP 1.2.3.4 only
+ 1.2.3.4		the same as 1.2.3.4/32
+ 1.2.3.0/24		class c net 1.2.3.0
+ 1.2.0.0/16		class b net 1.2.0.0
+ 1.2.3.4,1.2.4.0/24	1.2.3.4 and 1.2.4.0
+
+Here is one example of how to grant admin rights to everyone in a subnet,
+except the machine with the IP 10.0.0.2:
+
+	allow_admin = "10.0.0.0/24"
+	deny_admin  = "10.0.0.2"
+
+=item allow_stats
+
+The listed IPs are allowed to view the client list and the per-client status
+page on the server.
+
+Please see L<allow_admin> for an in depth discussion of the access right
+management.
+
+=item allow_status
+
+The listed IPs are allowed to view the general status and info pages on the
+server. Please see L<allow_admin> for an in depth discussion of the access
+right management.
+
+=item allow_work
+
+The listed IPs are allowed to work on the server. Please see L<allow_admin>
+for an in depth discussion of the access right management.
+
+=item debug_level
+
+Set the debug level. Default is 0, recommended is 1.
+
+Set to 1 to enable debug mode (cmd_status;type_debug).
+Set to 2 to enable leak reports in C<logs/leak.log>. Warning: this generates
+LOTs of data!
+
+To make debug_level = 2 really usefull, you need to compile Perl with:
+
+	./configure -Accflags=-DDEBUGGING && make
+
+=item deny_admin
+
+The listed IPs are B<forbidden> to administrate the server.
+
+Please see L<allow_admin> for an in depth discussion of the access right
+management.
+
+=item deny_stats
+
+The listed IPs are B<forbidden> to view the client list and the per-client
+status pages.
+
+Please see L<allow_admin> for an in depth discussion of the access right
+management.
+
+=item deny_status
+
+The listed IPs are B<forbidden> to view the general status and info pages on
+the server. Please see L<allow_admin> for an in depth discussion of the access
+right management.
+
+=item deny_work
+
+The listed IPs are B<forbidden> to work on the server. Please see
+L<allow_admin> for an in depth discussion of the access right management.
+
+=item hand_out_work B
+
+If on, server will hand out work to the client's. If set to off, the server
+will accept reports and present status pages, but never give out new chunks.
+
+=item maximum_request_time
+
+How many seconds to spent at most for handling each request. Do not set to
+high, or the server may be locked by a client request to long. But not to
+low either, or it won't be able to complete some requests. 5 seconds is a
+reasonable cap.
+
+=item max_requests
+
+Maximum number of requests one connect can contain, default is 128.
+
+=item self
+
+Address of server that is embedded into each generated HTML page to create
+clickable links.
+
+=item name
+
+The name of the server, used for displaying it on the status page and for
+tagging out-going emails.
+
+=item port
+
+The port C<dicopd> will listen on. This is ignored by the C<server> running
+under Apache.
+
+=item group
+
+The group C<dicopd> will actually run under. Make sure the group exists.
+
+=item user
+
+The user C<dicopd> will actually run under. Make sure it exists.
+
+=item flush
+
+For C<dicopd>. Wait so many minutes before flushing out your data to disk. See
+also L<Dicop.pod>, section "Data Integrity".
+
+=item default_style
+
+Set to which style to use as default, f.i. C<Sea> or C<default>. 
+
+=item file_server
+
+Prefix to URLs for the client to retrieve new worker and target files. Usually
+this is an Apache server at the same machine as the main server is on, and
+serving the files directly from the C<worker/> and C<target/> directories. But
+you also could use NFS or whatever you like, as long as LWP is able to
+retrieve an file from this URL. Appended to this URL will be paths like
+C<worker/archname/workername> or C<target/jobid.tgt>.
+
+You can give multiple C<file_server> statements by having more than one line:
+
+	file_server = "http://127.0.0.1:8080/"
+	file_server = "ftp://127.0.0.1/"
+
+These will all given to the client, and the client chooses the best server
+to download files from (or simple the one that is reachable first).
+
+=item mail_server
+
+Name or IP address of a SMTP server accepting connections on port 25. Set to
+'none' to disable the email feature (no emails will then be sent).
+
+=item mail_admin
+
+This user/address will get a copy of all sent mails
+
+=item mail_from
+
+This is the email address which will appear in all From: fields in mails sent
+by the server.
+
+=item mail_to
+
+This is the email address to which all mails from the server will be sent.
+See also L<mail_admin>.
+
+=item def_dir
+
+The directory where definition files are kept. These come with the distribution
+and need not to be edited.
+
+=item log_dir
+
+The directory storing the server's log files.
+
+=item msg_dir
+
+The directory containing the message file, e.g. the file that translates
+message numbers (like 200) into clear text, human readable messages.
+ 
+=item tpl_dir
+
+The template directory.
+
+=item data_dir
+
+The data directory, containing the state (or memory) of the server.
+
+=item worker_dir
+
+In this directory the worker are stored. The server uses them to build a hash
+per worker file and then sends this hash to the client for verification of the
+worker at the client side.
+
+It is a good idea to have the fileserver simple to point to this directory
+with a symbolic link, so that they never get out of sync.
+
+Don't just set the file server's DOCROOT simple to point to the DiCoP server's
+root directory, this would allow anyone to fetch any file from the server,
+including the password hashes of the admins and clients!
+
+=item target_dir
+
+The target files for (some of) the jobs. These are hashed (just like the
+workers) and the hash is then sent to the client.
+
+It is a good idea to have the fileserver simple to point to this directory
+with a symbolic link, so that they never get out of sync.
+
+Don't just set the file server's DOCROOT simple to point to the DiCoP server's
+root directory, this would allow anyone to fetch any file from the server,
+including the password hashes of the admins and clients!
+
+=item mailtxt_dir
+
+The mail texts are found inside this template dir, usually it is a subdirectory
+of the template dir C<tpl_dir>.
+
+=item error_log
+
+Name of the error log file, which will be located inside C<log_dir>.
+
+=item server_log
+
+Name of the server general log file, which will be located inside
+C<log_dir>.
+
+=item jobs_list
+
+=item clients_list
+
+=item groups_list
+
+=item charsets_list
+
+=item jobtypes_list
+
+=item proxies_list
+
+=item results_list
+
+=item testcases_list
+
+=item patterns_file
+
+=item objects_def_file
+
+=item log_level
+
+Specify the logging level.
+
+These values are cumulative, meaning adding them together will yield what
+is logged. Default is 7. A log_level above 4 will generate LOTs of data!
+You can also write it like log_level = 1+2+16
+
+	0 - no loggging
+	1 - log critical errors
+	2 - log important server messages (startup/shutdown)
+	4 - log non-critical errors
+	8 - log unimportant server messages (data flush etc)
+
+	Warning, the next two settings generate a lot of output!
+
+	16 - log all requests
+	32 - log all responses
+
+=item minimum_rank_percent
+
+Job with minimum rank gets this percent of all chunks (f.i. 90%), all the rest
+of the runnnig job share the rest of the cluster load (f.i. 10%).
+
+=item minimum_chunk_size
+
+In minutes. Client's requests for chunks less than this time will get
+increased to this time.
+
+=item maximum_chunk_size
+
+In minutes. Client's requests for chunks more than this time will get
+decreased to this time.
+
+=item resend_test
+
+Time in minutes after which a testcase is resend to a client that failed too
+often. Default is 6 hours.
+
+=item require_client_version
+
+Clients with a lower version than this are not allowed to connect. Set to 0
+to disable this check.
+
+=item require_client_build
+
+Clients with a build number lower than this are not allowed to connect, unless
+their version is higher than C<require_client_version>. Is not checked when
+C<require_client_version> is set to 0.
+
+=item client_architectures
+
+Allowed client architecture names, anything else is invalid.
+
+=item client_check_time
+
+Time in hours between two checks. When more than this time has passed, the
+server performs a check for each of it's clients to see whether they were
+not sending in reports for at least L<client_offline_time> hours. Set to 0 to
+disable this check.
+
+When a client goes from online to offline status, an email is sent to the
+administrator.
+
+=item client_offline_time
+
+Time in hours that a client is permitted to not return results before it is
+reported as missing. For each client that goes offline one email is sent, once.
+See also L<client_check_time>.
+
+=item charset_definitions
+
+Filename (usually in C<worker/> so that these can find it) for the character
+set definitions use by the worker files. Created (overwritten) upon startup 
+and automatically regenerated whenever a charset is added/deleted/changed.
+
+=item initial_sleep
+
+Time in seconds to wait before changing user and group and starting to work.
+Default is 0.
+
+=back
+
+=head2 proxy.cfg
+
+This lists all the valid key names in the I<proxy> config file (proxy.cfg by
+default) and their possible values.
+
+Any key in proxy.cfg will override the key(s) in server.cfg! If you list
+multiple keys, they will be keept as list, as usual. So:
+
+	# server.cfg
+
+	foo = blah
+	# foo now ['blah','bar']
+	foo = bar
+
+	name = bazzle
+
+	# proxy.cfg
+
+	# foo is now 'buh'!
+	foo = buh
+	# foo is now ['buh','huh']
+	foo = huh
+	# name is still bazzle
+
+=over 2
+
+=item upstream_server
+
+Name of the main server the proxy talks to (aka the server the proxy is doing
+the caching for).
+
+=item error_log
+
+The name of the error log file. This overrides the value set in C<server.cfg>.
+
+=back
+
+=head2 client.cfg
+
+This lists all the valid key names in the I<client> config file (client.cfg by
+default) and their possible values.
+
+=over 2
+
+=item sub_arch
+
+The sub-architecture string that will be appended to the architecture name.
+Example:
+
+	sub_arch	= "i386"
+
+This can be used to distinguish clients with the same operating system,
+but different arcitectures (like different CPU, OS version) from each
+other. You can also use it to differentiate between client groups like
+this:
+
+In one config:
+
+	sub_arch	= "i386-office"
+
+And for some other clients:
+
+	sub_arch	= "i386-offsite"
+
+If the proper subdirectories exist at the server side, this will serve
+different worker files to the clients.
+
+=item id
+
+The id number of the client. This is assigned by the server administrator. 
+The default is 0. The value can (in case of 0 must) be overwritten on the
+commandline with C<--id=number>.
+
+=item server
+
+All keys with the name server list server addresses the client is going to use.
+There is no difference between a server or a proxy, from the client's point of
+view they are the same.
+
+The format is either with or without the leading C<http://>:
+
+	server = http://127.0.0.1:8088/cgi-bin/dicop/server
+	server = 192.168.1.2:8888
+
+In case of dicopd servers the path does not matter.
+
+=item random_server
+
+If set to 0, all servers listed under L<server> will tried in turn.
+If set to 1, servers are tried randomly.
+
+=item chunk_size
+
+Prefered chunk size in minutes, ranging from 1 to 360. The value should be
+between 20 (for interactive workstations) to 50 (for unattended cluster nodes).
+
+=item update_files
+
+If set to 0, missing workers and target fules will B<not> be automatically
+downloaded. Set to 1 to allow download and update of missing/outdated files.
+
+If you have your client in a directory mounted over NFS, it is a good idea to
+have the worker and target dir local (disk or ramdisk) and allow updating.
+Otherwise, the clients would fight over who should/could download a worker and
+store it in the shared directory.
+
+There is a problem with target files. The best solution is to store them
+directly in the directory the client uses as target (maybe point the
+L<target_dir>) directly to the directory the server uses as target dir. This
+way the client finds the workers and targets and doesn't need to retrieve them.
+
+=item log_dir
+
+The directory storing the client's log files.
+
+=item cache_dir
+
+Certain files are chached here, mainly scratch files when using the wget
+connector method. 
+
+=item worker_dir
+
+Inside this directory the worker files are stored.
+
+=item msg_dir
+
+=item error_log
+
+Name of the error log file. Default is "client_##id##.log".
+
+=item wait_on_error
+
+How many seconds to wait when an error occurs. Don't set to low, otherwise
+the server will slow down the client.
+
+=item wait_on_idle
+
+How many seconds to wait when no work is available from the server. Don't set
+to low, otherwise the server will slow down the client.
+
+=item via
+
+Name of the connector used to talk to the server. Examples:
+
+	via = "wget"
+	via = "LWP"
+
+=back
+
+=head1 AUTHOR
+
+(c) Bundesamt fuer Sicherheit in der Informationstechnik 1998-2004
+
+DiCoP is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License version 2 as published by the Free
+Software Foundation.
+
+See the file LICENSE or L<http://www.bsi.bund.de/> for more information.
+
+=cut
+

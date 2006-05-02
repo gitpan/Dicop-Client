@@ -1,0 +1,106 @@
+
+=pod
+
+=head1 README.client
+
+You can use perldoc to read this document: C<perldoc README.client>.
+
+This document details all the necc. information to run a DiCoP client.
+
+=head1 INSTALLATION
+
+This package is a part of the server/client package and contains all the
+neccessary parts to run a client.
+
+=head2 Signature check
+
+Before you do anything with the downloaded and extracted package, verify the
+signature!
+
+Download our GnuPG key from http://www.bsi.bund.de/produkte/dicop/download.htm
+then do:
+
+	gpg Dicop-Client-3.00_36.tar.gz.asc
+
+(Replace 3.00_36 by the actual version you got).
+
+If the signature does not verify ok, please notify us immidiately. B<DO NOT>
+run perl Makefile.PL or anything else nor install the package when the
+signature cannot be successfully verified.
+B<Your system might get compromised!>.
+
+=head2 Installation
+
+You can extract it to a separate directory:
+
+	tar -xzf Dicop-Client-3.00_36.tar.gz
+
+(Replace 3.00_36 by the actual version you got).
+
+There is no need to install anything. The only thing you might want to do is
+to edit the configuration file inside C<config/>.
+
+It is possible to specify the most important options on the command line,
+though, so you can even skip this step:
+
+=over 2
+
+=item rename config file
+
+Rename the file C<config/client.cfg.sample> to C<config/client.cfg>.
+
+=item edit config file
+
+Change the server URL and port settings, and maybe specify the id.
+
+=back
+
+Here is a sample client start:
+
+	./client --id=123456 --server=192.168.0.1:8888
+
+=head2 Requirements
+
+You will need Perl v5.8.1 or better (Perl v5.8.6 recommended), for Windows you
+need to use ActiveState Perl 8xx from
+L<http://www.activestate.com/Products/ActivePerl/>.
+
+For non-Windows you will probably need some additional modules. All of these
+modules can be found via L<http://search.cpan.org/>.
+
+Please see the platform specific README files for more details.
+
+=head2 Modules
+
+The client needs some additional perl modules to work properly. You can either
+install all of them at the target machine, or bundle them together with the
+client (for modules that consist only of pure Perl). See L<doc/Client.pod> for
+how to automatically update the client on each machine.
+
+=head2 Supported platforms
+
+The client I<should> run under Windows, Linux, MAC OS, BSD, Debian, Solaris
+etc. OS/2 *should* work, but we could not test this lately due to lack of a
+working OS/2 system.
+
+The client should also work under armv4l linux - but we tested it only one
+a Compaq iPAQ H3870 running kernel 2.4.18-hh6 with Perl v5.004 and v5.005 in
+conjunction with C<--via=wget> (since LWP was not easily available). See
+L<http://www.handhelds.org/|http://www.handhelds.org/> for how to obtain and
+install Linux for the iPAQ.
+
+However, we can not guaranty that it will work on your platform. If you
+experience any problems, please contact us (see below).
+
+=head1 AUTHOR
+
+(C) Bundesamt fuer Sicherheit in der Informationstechnik 1998-2006.
+
+For licensing information please refer to the LICENSE file.
+
+=head2 Contact
+
+Please see the C<README>.
+
+=cut
+

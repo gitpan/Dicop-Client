@@ -1,0 +1,475 @@
+=pod
+
+=head1 NAME
+
+GLOSSARY - Glossary with often used acronyms or words.
+
+Last update: 2004-12-22
+
+=head2 A
+
+=over 2
+
+=item argument
+
+A L<request> has arguments (also called parameters), just like a
+command on the command line has (think of C<ls -la>).
+
+An example:
+
+	cmd_status;type_main
+
+Here the two arguments are B<cmd> and B<type>.
+
+=item administrator
+
+An administrator (also refered to as C<user>) can view all pages on the
+C<server>, as well as change them, add new objects (jobs, charsets etc).
+
+He/she needs an user account for that. The first account has to be added
+to the server before it is started (for security reasons), all other
+accounts can be added/edited/deleted by any of the administrators.
+
+Currently all administrators have the same rights.
+
+=back
+
+
+=head2 C
+
+=over 2
+
+=item case
+
+Cases are used to group L<jobs|job> together, each job must belong to
+exactly one case.
+
+=item CDF
+
+A C<Chunk Description File>. Carries extra options necessary for a chunk
+like charset parameters (prefix, dictionaries etc) or job parameters
+(like extra params).
+
+For a detailed specification see the file C<doc/Config.pod> in the
+C<Dicop::Workerframe> package.
+
+=item charset
+
+A charset describes the keyspace of a job, e.g. what keys are part of the
+keyspace and what not. The charset is also responsible for mapping between
+the keys in the keyspace and a consequtive numberspace that goes from 1 to
+the number of the last key.
+
+=item charset description file
+
+These are now known as L<job description file> or L<JDF> for short.
+
+=item charsets.def
+
+C<charsets.def> is a file describing all the different charsets, so that a
+worker knows what charset number X looks like, and which keys belong to
+the L<keyspace> of it.
+
+=item checklist
+
+When a solution is found for one job, a small chunk with this result will
+be added to the C<checklist> of all running jobs with the same jobtype.
+
+=item chunk
+
+A (usually small) part of the keyspace. All chunks together in the
+L<chunklist> of a L<job> make out the L<keyspace>.
+
+=item chunklist
+
+All L<chunks|chunk> in this list together form the L<keyspace>.
+
+=item client
+
+The word client has three meanings:
+
+	* The client machine/hardware, see L<node>.
+
+	* And the client software running on the client machine.
+	  This software requests work from a L<server> or L<proxy>,
+	  feeds it to the L<worker> and sends the result back to
+	  the server. Clients belong to a L<group>, but they never
+	  talk with each other.
+
+	* The internal server object representing a client.
+	  Each client has to be registered (e.g. known) to the server
+	  before the server will accept L<requests|request> from it.
+
+=item clientmap
+
+The clientmap shows you at one glance the status of all the known clients.
+
+=item connect
+
+Each time a client talks to the server, this counts as one connect. Each
+connect can carry multiple L<requests|request>.
+
+=back
+
+
+=head2 D
+
+=over 2
+
+=item deja vu
+
+The (strong) feeling that something has happened to you before, or you were
+already at this place or time. See also L<deja vu>.
+
+=item dictionary
+
+An alphabetically sorted (just what C<sort -u> produces) list of words stored in a flat
+file, e.g. one word per line. Each word can contain arbitrary characters, except
+linefeed of course.
+
+The dictionary file needs to be processed by a small script, which checks it and
+generates a checksum. The server will only recognize dictionaries if the checksum
+is correct, e.g. the check succeeded.
+
+=back
+
+
+=head2 F
+
+=over 2
+
+=item fileserver
+
+Sometimes the L<client> will need to download files, usually
+L<workers|worker> or L<targetfiles|target files>. These are provided by a
+so-called fileserver, which is usually just an HTTP or FTP server running at the
+same (or another) machine than the L<main server|server>.
+
+=back
+
+
+=head2 G
+
+=over 2
+
+=item group
+
+L<Clients|client> are organized into groups, mostly for statistical purposes.
+
+=item glitch
+
+A small change in the matrix. See also L<deja vu>.
+
+=back
+
+
+=head2 H
+
+=over 2
+
+=item headnode
+
+The machine running the L<server> is sometimes referred to as the C<headnode>.
+
+=back
+
+
+=head2 J
+
+=over 2
+
+=item JDF
+
+A C<Job Description File>. This carries extra options necessary for a particular
+job, like a fixed prefix, extra params etc.
+
+For a detailed specification see the file C<doc/Config.pod> in the
+C<Dicop::Workerframe> package.
+
+=item job
+
+A job is what you use to find a solution or password for, f.i. it might be
+some sort of encryption which uses a password as key. The job contains the
+L<keyspace> to be searched as well as additional options that
+describe the kind of job.
+
+=item job description file
+
+Please see L<JDF> for details.
+
+=item jobtype
+
+Each job has a jobtype, which describes which worker to use for this job.
+
+=back
+
+
+=head2 N
+
+=over 2 
+
+=item node
+
+A node is one client machine in the cluster, running the L<client> and
+L<worker> (one worker at a time).
+
+In a DiCoP cluster, nodes can be of any size, speed and architecture. The nodes
+never need to talk to each other, which means their raw CPU power is much
+more important than their network speed - theoretically they could work
+over dial-up or email just fine.
+
+See also L<headnode>.
+
+=back
+
+
+=head2 P
+
+=over 2 
+
+=item parameter
+
+See L<arguments|argument>.
+
+=item proxy
+
+A special server acting as a proxy or bridge. It can help clients to cross
+network segments, and caches certain information to reduce the load on the
+L<main server|server>. Use the package C<Dicop-Proxy> to install a DiCoP proxy.
+
+=back
+
+
+=head2 K
+
+=over 2
+
+=item keyspace
+
+The key space is the complete list of all keys or passwords for a certain job.
+Since it is usually very huge, it is distributed over the L<clients|client>,
+and each of them looks at different pieces of the keyspace. This is what this
+project is all about, afterall: distributed computing.
+
+=back
+
+
+=head2 R
+
+=over 2
+
+=item rank
+
+L<Jobs|job> are ranked by their rank. The job (of all running jobs) with the
+lowest rank becomes a
+certain percent of all cluster CPU time (usually this is 90%, but can be
+changed in the server config file). All other jobs share the rest of the CPU
+time equally.
+
+If there is more than one job with the same, lowest rank, the share the 90%
+equally between them.
+
+When the job with the lowest rank is done, it will be removed from the list
+of running jobs. Thus the running job(s) with the second-to-lowest rank will
+then have the lowest rank, thus getting the highest priority.
+
+Some examples:
+
+	Job id		job rank	priority assigned
+	1		80		90%
+	2		90		 5%
+	3		90		 5%
+
+Adding another job with rank 70:
+
+	1		80		 3.33%	
+	2		90		 3.33%	
+	3		90		 3.33%	
+	4		70		90%	
+
+Assuming that job 3 is finished:
+
+	1		80		 5%	
+	2		90		 5%	
+	3		90		-	
+	4		70		90%	
+
+Adding another job with rank 70:
+
+	1		80		 5%	
+	2		90		 5%	
+	3		90		-
+	4		70		45%	
+	5		70		45%
+	
+The priority in percent means that the job will get that much CPU time from
+the cluster. In reality, it means that the number of chunks issued to that
+job will be approximate this priority. So some errors occur and it only works
+out after a couple of chunks have been issued.
+
+=item request
+
+Messages exchanged between the client and the server are called C<requests>.
+
+Each request has L<parameters|argument>. 
+
+The client may send multiple C<requests> on each L<connect>, and the L<server> will
+answer with one or more C<requests>.
+
+If the client is a browser, it will sent usually only one request and the server
+will answer with an HTML page.
+
+=item reset
+
+The L<server> stores tables and counters for each client, for instance, how many
+failures this client had, how fast it can work on certain jobtypes, etc.
+
+Since a client will be disallowed from connecting to the server if it had too
+many failures, there is a way to reset the client, e.g. pruge these tables. To
+do this, go to the client page on the server either via the L<clientmap>,
+the client list or the search page and then choose "Reset" from the menu.
+
+=item result
+
+An result is a solution in the L<keyspace>. There can be only one
+result per L<chunk>, but usually you care only for the first found
+result in a given L<job>, anyway.
+
+=back
+
+
+=head2 S
+
+=over 2
+
+=item server
+
+There usually exists only one main (or master) server. It contains all the
+data (jobs, testcases, clients etc), manages the keyspaces, hands out work,
+displays status pages, let's you administer anything etc. L<Clients|client>
+talk to it directly or via a L<proxy>.
+
+=item style
+
+The HTML output can have certain styles (think of Cascading Style Sheets, which
+are incidentily used to implement this). This is purely asthetic and doesn't
+change the working of the cluster in any way.
+
+=back
+
+
+=head2 T
+
+=over 2
+
+=item target
+
+A target (or targetfile) is needed by some L<jobs|job>. Usually a job needs
+some small bits of information to be solved, but sometimes it needs a lot more
+information. In these cases the information are put into a target file, which
+is downloaded by each L<client> and then given to the L<worker>.
+
+=item template
+
+Templates are pre-made files that are used to send customized information from
+the server to some client (or user via a browser). They contain
+small pieces of text sourrounded by C<##>. Here is an example:
+
+	I know <b>##runningjobs##</b> running jobs.
+
+This template would be processed by the server, filling in the marker with
+the number of actually running jos. The result would look like:
+
+	I know <b>2</b> running jobs.
+
+There are templates for the HTML output, and for the emails sent out by the
+server.
+
+=item testcase
+
+A testcase consists of a small L<chunk> with a known result, and is sent
+to the L<client> to test whether it really works or not. There are two
+types of testcases, one with a (known) result and one known to have no result.
+
+To make sure that a client/worker really works, for each  jobtype there should
+be at least two testcases, one with a result, and one without a result.
+
+=back
+
+
+=head2 U
+
+=over 2
+
+=item user
+
+There are two definitions of the word user:
+
+People that run a client and participate in a DiCoP server project are
+called users.
+
+Also, people who aministrate the server are sometimes called users, see
+L<administrator> for more information.
+
+=back
+
+
+=head2 W
+
+=over 2
+
+=item what?
+
+Usually heard uttered by an astonished observer when a L<deja vu> happens.
+
+=item worker
+
+A program that works on a part of the key space and reports whether it found a
+key or not. Usually written in C or Assembler to be as fast as possible. The
+worker is used by the L<client>. See also L<workerframe>.
+
+=item workerframe
+
+This is a framework to build workers more easily and is called Dicop-Workerframe.
+
+This framework anything you need to build a worker in C, plus documentation
+and examples.
+
+=back
+
+
+=head2 V
+
+=over 2
+
+=item VERIFY
+
+Chunks are in the C<verify> state when a client found a solution for this chunk,
+but no other client did yet verify the result.
+
+The number of clients that need to verify each positive (or negative) result
+can be set in the server config file.
+
+The defaults are set so that negative results need not to be verified at all,
+and positive results must be verified by at least one other client.
+
+=item vu, deja
+
+The (strong) feeling that something has happened to you before, or you were
+already at this place or time. See also L<deja vu>.
+
+=back
+
+
+=head1 AUTHOR
+
+(c) Bundesamt fuer Sicherheit in der Informationstechnik 1998-2004
+
+DiCoP is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License version 2 as published by the Free
+Software Foundation.
+
+See the file LICENSE or L<http://www.bsi.bund.de/> for more information.
+
+=cut
+
