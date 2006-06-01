@@ -9,8 +9,9 @@ This document details all the necc. information to run a DiCoP client.
 
 =head1 INSTALLATION
 
-This package is a part of the server/client package and contains all the
-neccessary parts to run a client.
+This package is a part of the Dicop server/client package and contains
+all the neccessary parts to run a client, inclusive bundled
+modules from the Dicop::Base package.
 
 =head2 Signature check
 
@@ -20,9 +21,9 @@ signature!
 Download our GnuPG key from http://www.bsi.bund.de/produkte/dicop/download.htm
 then do:
 
-	gpg Dicop-Client-3.00_36.tar.gz.asc
+	gpg Dicop-Client-3.03.tar.gz.asc
 
-(Replace 3.00_36 by the actual version you got).
+(Replace 3.03 by the actual version you got).
 
 If the signature does not verify ok, please notify us immidiately. B<DO NOT>
 run perl Makefile.PL or anything else nor install the package when the
@@ -91,6 +92,18 @@ install Linux for the iPAQ.
 
 However, we can not guaranty that it will work on your platform. If you
 experience any problems, please contact us (see below).
+
+=head2 Workers
+
+A Dicop client will communicate with the Dicop server, maybe via
+a Dicop proxy. It will also download files from a file server
+as instructed by the Dicop server.
+
+The actual work, however, is done by workers. These workers must
+be compiled for the platform the client runs under.
+
+To develop workers for a Dicop system, please use the Dicop-Workerframe
+package, as it makes this very easy.
 
 =head1 AUTHOR
 

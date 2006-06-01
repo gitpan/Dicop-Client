@@ -14,9 +14,9 @@ package Dicop;
 use vars qw($VERSION $BUILD $BASE_MIN_VER @ISA @EXPORT_OK);
 use strict;
 
-$VERSION = '3.02';		# Current version of this package
+$VERSION = '3.03';		# Current version of this package
 $BUILD = 0;			# Current build of this package
-$BASE_MIN_VER = '3.002000';	# We need at least this build of Dicop::Base
+$BASE_MIN_VER = '3.003000';	# We need at least this build of Dicop::Base
 require 5.008001;		# requires this Perl version or later
 
 require Exporter;
